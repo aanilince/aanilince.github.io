@@ -2,33 +2,133 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Eyesight: Vision Challenge</title>
 <meta name="description" content="A paper opens for a split second. Type the numbers you saw.">
+<meta property="og:title" content="Eyesight: Vision Challenge">
+<meta property="og:description" content="A number flashes on a folded paper for a split second. Did you see it?">
+<meta property="og:image" content="https://aanilince.github.io/eyesight/go/icon.png">
+<link rel="icon" href="icon.png">
+<link rel="apple-touch-icon" href="icon.png">
 <style>
-  :root { color-scheme: dark; --bg: #0e1116; --fg: #f3f5f7; --muted: #9aa4b2; --accent: #4da3ff; }
+  /* Layout: one centred column built for a phone. Brand, hook, paper demo, download button, facts. */
+  :root {
+    --sky: #4C87FC;
+    --deep-sky: #2851AF;
+    --ink: #0B1020;
+    --paper: #F5F1E4;
+    --paper-shade: #E0D9C6;
+    --pop: #FFD23F;
+    --font: ui-rounded, "SF Pro Rounded", system-ui, -apple-system, "Segoe UI", sans-serif;
+    color-scheme: light;
+  }
   * { box-sizing: border-box; }
-  body { margin: 0; min-height: 100vh; display: flex; flex-direction: column; align-items: center;
-         justify-content: center; padding: 24px 16px 96px; background: var(--bg); color: var(--fg);
-         font: 17px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; text-align: center; }
-  h1 { margin: 0 0 12px; font-size: 2rem; line-height: 1.2; }
-  p { margin: 0 0 28px; max-width: 28rem; color: var(--muted); }
-  .button { display: inline-block; padding: 14px 28px; border-radius: 12px; background: var(--accent);
-            color: #04121f; font-weight: 600; text-decoration: none; }
-  footer { margin-top: 40px; font-size: 14px; }
-  footer a { color: var(--muted); }
+  html { background: var(--sky); }
+  body {
+    margin: 0; min-height: 100vh; color: var(--ink); font-family: var(--font); font-size: 17px; line-height: 1.45;
+    background-color: var(--sky);
+    background-image: radial-gradient(rgba(255,255,255,.2) 2px, transparent 2.5px);
+    background-size: 28px 28px;
+    padding-block: 24px 88px;
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+  }
+  .wrap { max-width: 30rem; margin: 0 auto; display: flex; flex-direction: column; gap: 28px; }
+
+  .brand { display: flex; align-items: center; gap: 12px; font-weight: 900; font-size: 1.35rem; letter-spacing: .01em; }
+  .brand img { width: 52px; height: 52px; border-radius: 12px; border: 3px solid var(--ink); box-shadow: 0 3px 0 var(--ink); }
+
+  h1 { margin: 0; font-size: clamp(2.1rem, 9vw, 2.9rem); line-height: 1.05; font-weight: 900; text-wrap: balance; }
+  h1 mark { background: var(--pop); color: var(--ink); padding: 0 .18em; border-radius: .2em; box-decoration-break: clone; -webkit-box-decoration-break: clone; }
+  .sub { margin: 12px 0 0; font-weight: 700; font-size: 1.1rem; max-width: 26rem; }
+
+  /* The game in one loop: the paper opens, shows the number for a split second, snaps shut. */
+  .stage { display: flex; flex-direction: column; align-items: center; gap: 14px; perspective: 900px; }
+  .sheet {
+    position: relative; width: min(78vw, 300px); aspect-ratio: 4 / 3; border: 4px solid var(--ink); border-radius: 14px;
+    background: var(--paper); box-shadow: 0 8px 0 var(--ink); display: grid; place-items: center;
+  }
+  .digits { font-size: clamp(2.6rem, 14vw, 3.6rem); font-weight: 900; letter-spacing: .14em; padding-left: .14em; font-variant-numeric: tabular-nums; }
+  .flap {
+    position: absolute; inset: -4px; border: 4px solid var(--ink); border-radius: 14px; background: var(--paper-shade);
+    display: grid; place-items: center; font-size: 3.2rem; font-weight: 900; color: var(--deep-sky);
+    transform-origin: top center; backface-visibility: hidden; -webkit-backface-visibility: hidden;
+    animation: flash 4.4s infinite;
+  }
+  .flap::before { content: ""; position: absolute; left: 0; right: 0; top: 50%; border-top: 3px dashed rgba(11,16,32,.35); }
+  @keyframes flash {
+    0%, 28%   { transform: rotateX(0deg); }
+    32%       { transform: rotateX(-172deg); }
+    41%       { transform: rotateX(-172deg); }
+    45%, 100% { transform: rotateX(0deg); }
+  }
+  .ask { margin: 0; font-weight: 900; font-size: 1.05rem; background: var(--paper); border: 3px solid var(--ink); border-radius: 999px; padding: 4px 16px; box-shadow: 0 3px 0 var(--ink); }
+
+  .cta {
+    display: block; text-align: center; text-decoration: none; background: var(--pop); color: var(--ink);
+    font-weight: 900; font-size: 1.2rem; padding: 16px 24px; border: 4px solid var(--ink); border-radius: 16px;
+    box-shadow: 0 6px 0 var(--ink); transition: transform .08s, box-shadow .08s;
+  }
+  .cta:active { transform: translateY(5px); box-shadow: 0 1px 0 var(--ink); }
+  .cta:focus-visible { outline: 3px solid var(--paper); outline-offset: 4px; }
+
+  .facts { background: var(--paper); border: 4px solid var(--ink); border-radius: 18px; box-shadow: 0 8px 0 var(--ink); padding: 20px; display: flex; flex-direction: column; gap: 18px; }
+  .fact h2 { margin: 0 0 4px; font-size: 1.1rem; font-weight: 900; }
+  .fact p { margin: 0; font-weight: 600; }
+  .ladder { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0 0; padding: 0; list-style: none; }
+  .ladder li { border: 2px solid var(--ink); border-radius: 999px; padding: 1px 12px; font-weight: 800; font-size: .95rem; background: #fff; }
+  .ladder li:last-child { background: var(--pop); }
+
+  footer { text-align: center; font-weight: 700; font-size: .95rem; }
+  footer a { color: var(--ink); }
+
   #consent { position: fixed; left: 0; right: 0; bottom: 0; display: none; gap: 12px; align-items: center;
-             justify-content: center; flex-wrap: wrap; padding: 16px; background: #1a2029; font-size: 14px; }
+             justify-content: center; flex-wrap: wrap; padding: 16px; padding-bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+             background: var(--ink); color: var(--paper); font-size: 14px; font-weight: 700; }
   #consent button { padding: 8px 16px; border: 0; border-radius: 8px; font: inherit; cursor: pointer; }
-  #consent .yes { background: var(--accent); color: #04121f; font-weight: 600; }
-  #consent .no { background: transparent; color: var(--muted); }
+  #consent .yes { background: var(--pop); color: var(--ink); font-weight: 900; }
+  #consent .no { background: transparent; color: var(--paper); }
+
+  @media (prefers-reduced-motion: reduce) { .flap { animation: none; transform: rotateX(-172deg); } }
 </style>
 </head>
 <body>
-  <h1>A paper opens for a split second.</h1>
-  <p>Type the numbers you saw. Eyesight is a quick reflex game for your iPhone.</p>
-  <a id="download" class="button" href="https://apps.apple.com/app/id6807990654">Download on the App Store</a>
-  <footer><a href="https://aanilince.github.io/eyesight/privacy.html">Privacy</a></footer>
+  <main class="wrap">
+    <div class="brand"><img src="icon.png" width="52" height="52" alt=""><span>Eyesight</span></div>
+
+    <section>
+      <h1>A number flashes. <mark>Did you see it?</mark></h1>
+      <p class="sub">A folded paper opens for a split second. Type the numbers you saw.</p>
+    </section>
+
+    <div class="stage" aria-hidden="true">
+      <div class="sheet">
+        <div class="digits" id="digits">4729</div>
+        <div class="flap" id="flap">?</div>
+      </div>
+      <p class="ask">What was the number?</p>
+    </div>
+
+    <a id="download" class="cta" href="https://apps.apple.com/app/id6807990654">Download on the App Store</a>
+
+    <section class="facts">
+      <div class="fact">
+        <h2>Climb the eye leagues</h2>
+        <p>Every run earns or costs points. Each eye comes with real facts about how that animal sees.</p>
+        <ul class="ladder"><li>Mole</li><li>Owl</li><li>Cat</li><li>Hawk</li><li>Eagle</li></ul>
+      </div>
+      <div class="fact">
+        <h2>Rounds that play tricks</h2>
+        <p>Type it backwards. Find the one red digit. Catch the twin pair. Watch the digits vanish.</p>
+      </div>
+      <div class="fact">
+        <h2>A doctor's note after every run</h2>
+        <p>Read off your real mistakes, with a card to share.</p>
+      </div>
+    </section>
+
+    <footer><a href="https://aanilince.github.io/eyesight/privacy.html">Privacy</a> · <a href="https://aanilince.github.io/eyesight/support.html">Support</a></footer>
+  </main>
 
   <div id="consent" role="dialog" aria-label="Cookies">
     <span>We use Meta and TikTok cookies to measure our ads.</span>
@@ -103,6 +203,13 @@
   document.getElementById('download').addEventListener('click', function (e) {
     e.preventDefault();
     location.href = downloadUrl();
+  });
+
+  // A new number for every loop of the paper demo.
+  document.getElementById('flap').addEventListener('animationiteration', function () {
+    var n = '';
+    for (var i = 0; i < 4; i++) n += Math.floor(Math.random() * 10);
+    document.getElementById('digits').textContent = n;
   });
 
   var banner = document.getElementById('consent');
