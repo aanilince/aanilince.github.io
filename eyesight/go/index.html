@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Eyesight: Vision Challenge</title>
+<meta name="description" content="A paper opens for a split second. Type the numbers you saw.">
+<style>
+  :root { color-scheme: dark; --bg: #0e1116; --fg: #f3f5f7; --muted: #9aa4b2; --accent: #4da3ff; }
+  * { box-sizing: border-box; }
+  body { margin: 0; min-height: 100vh; display: flex; flex-direction: column; align-items: center;
+         justify-content: center; padding: 24px 16px 96px; background: var(--bg); color: var(--fg);
+         font: 17px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; text-align: center; }
+  h1 { margin: 0 0 12px; font-size: 2rem; line-height: 1.2; }
+  p { margin: 0 0 28px; max-width: 28rem; color: var(--muted); }
+  .button { display: inline-block; padding: 14px 28px; border-radius: 12px; background: var(--accent);
+            color: #04121f; font-weight: 600; text-decoration: none; }
+  footer { margin-top: 40px; font-size: 14px; }
+  footer a { color: var(--muted); }
+  #consent { position: fixed; left: 0; right: 0; bottom: 0; display: none; gap: 12px; align-items: center;
+             justify-content: center; flex-wrap: wrap; padding: 16px; background: #1a2029; font-size: 14px; }
+  #consent button { padding: 8px 16px; border: 0; border-radius: 8px; font: inherit; cursor: pointer; }
+  #consent .yes { background: var(--accent); color: #04121f; font-weight: 600; }
+  #consent .no { background: transparent; color: var(--muted); }
+</style>
+</head>
+<body>
+  <h1>A paper opens for a split second.</h1>
+  <p>Type the numbers you saw. Eyesight is a quick reflex game for your iPhone.</p>
+  <a id="download" class="button" href="https://apps.apple.com/app/id6807990654">Download on the App Store</a>
+  <footer><a href="https://aanilince.github.io/eyesight/privacy.html">Privacy</a></footer>
+
+  <div id="consent" role="dialog" aria-label="Cookies">
+    <span>We use Meta and TikTok cookies to measure our ads.</span>
+    <span><button class="yes">Accept</button> <button class="no">No thanks</button></span>
+  </div>
+
+  <script src="af-smart-script-2.10.4.js"></script>
+  <script>
+  // Fill these in before publishing. An empty value turns that part off.
+  var CONFIG = {
+    appStore: 'https://apps.apple.com/app/id6807990654',
+    oneLink: '',        // OneLink template with https:// ("https://yourname.onelink.me/AbCd"); the script rejects it without
+    metaPixelId: '',
+    tiktokPixelId: ''
+  };
+
+  var consent = null;
+  try { consent = localStorage.getItem('consent'); } catch (e) {}
+
+  function loadMetaPixel(id) {
+    !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');
+    fbq('init', id);
+    fbq('track', 'PageView');
+  }
+
+  function loadTikTokPixel(id) {
+    !function(w,d,t){w.TiktokAnalyticsObject=t;var ttq=w[t]=w[t]||[];ttq.methods=["page","track","identify","instances","debug","on","off","once","ready","alias","group","enableCookie","disableCookie","holdConsent","revokeConsent","grantConsent"];ttq.setAndDefer=function(t,e){t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}};for(var i=0;i<ttq.methods.length;i++)ttq.setAndDefer(ttq,ttq.methods[i]);ttq.instance=function(t){for(var e=ttq._i[t]||[],n=0;n<ttq.methods.length;n++)ttq.setAndDefer(e,ttq.methods[n]);return e};ttq.load=function(e,n){var r="https://analytics.tiktok.com/i18n/pixel/events.js";ttq._i=ttq._i||{};ttq._i[e]=[];ttq._i[e]._u=r;ttq._t=ttq._t||{};ttq._t[e]=+new Date;ttq._o=ttq._o||{};ttq._o[e]=n||{};var s=document.createElement("script");s.type="text/javascript";s.async=!0;s.src=r+"?sdkid="+e+"&lib="+t;var x=document.getElementsByTagName("script")[0];x.parentNode.insertBefore(s,x)};ttq.load(id);ttq.page()}(window,document,'ttq');
+  }
+
+  function loadPixels() {
+    if (CONFIG.metaPixelId) loadMetaPixel(CONFIG.metaPixelId);
+    if (CONFIG.tiktokPixelId) loadTikTokPixel(CONFIG.tiktokPixelId);
+  }
+
+  function cookie(name) {
+    var m = document.cookie.match(new RegExp('(?:^|; )' + name + '=([^;]*)'));
+    return m ? decodeURIComponent(m[1]) : '';
+  }
+
+  // The Meta Pixel writes _fbc from fbclid. If it did not run yet, build the same value.
+  function fbc() {
+    var c = cookie('_fbc');
+    if (c) return c;
+    var id = new URLSearchParams(location.search).get('fbclid');
+    return id ? 'fb.1.' + Date.now() + '.' + id : '';
+  }
+
+  // Smart Script forwards fbclid and ttclid by itself. It does not read cookies,
+  // so fbp, fbc and _ttp go into af_sub3 to af_sub5 from here.
+  function downloadUrl() {
+    if (consent !== 'yes' || !CONFIG.oneLink || !window.AF_SMART_SCRIPT) return CONFIG.appStore;
+    var result = window.AF_SMART_SCRIPT.generateOneLinkURL({
+      oneLinkURL: CONFIG.oneLink,
+      afParameters: {
+        mediaSource: {
+          keys: ['utm_source'],
+          overrideValues: { facebook: 'metaweb_int', fb: 'metaweb_int', ig: 'metaweb_int',
+                            instagram: 'metaweb_int', tiktok: 'tiktokweb_int' },
+          defaultValue: 'website'
+        },
+        campaign: { keys: ['utm_campaign'], defaultValue: 'landing' },
+        adSet: { keys: ['utm_term'] },
+        ad: { keys: ['utm_content'] },
+        afSub3: { keys: [], defaultValue: cookie('_fbp') },
+        afSub4: { keys: [], defaultValue: fbc() },
+        afSub5: { keys: [], defaultValue: cookie('_ttp') }
+      }
+    });
+    return result ? result.clickURL : CONFIG.appStore;
+  }
+
+  document.getElementById('download').addEventListener('click', function (e) {
+    e.preventDefault();
+    location.href = downloadUrl();
+  });
+
+  var banner = document.getElementById('consent');
+  function answer(value) {
+    try { localStorage.setItem('consent', value); } catch (e) {}
+    consent = value;
+    banner.style.display = 'none';
+    if (value === 'yes') loadPixels();
+  }
+  banner.querySelector('.yes').addEventListener('click', function () { answer('yes'); });
+  banner.querySelector('.no').addEventListener('click', function () { answer('no'); });
+
+  if (consent === 'yes') loadPixels();
+  else if (consent !== 'no' && (CONFIG.metaPixelId || CONFIG.tiktokPixelId)) banner.style.display = 'flex';
+  </script>
+</body>
+</html>
